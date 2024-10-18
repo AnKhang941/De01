@@ -265,6 +265,7 @@
             this.Controls.Add(this.txtTim);
             this.Name = "FrmSinhVien";
             this.Text = "FrmSinhvien";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmSinhVien_FormClosing);
             this.Load += new System.EventHandler(this.FrmSinhVien_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();

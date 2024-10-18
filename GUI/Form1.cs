@@ -1,9 +1,11 @@
 ﻿using BUS;
-using DAL.Model;
+using System.Windows.Forms;
 using System;
+using DAL.Model;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Forms;
+
+
 
 namespace GUI
 {
@@ -17,12 +19,14 @@ namespace GUI
             InitializeComponent();
         }
 
+        // Load dữ liệu từ cơ sở dữ liệu
         private void LoadData()
         {
             List<Sinhvien> sinhviens = studentService.GetAll();
             BindGrid(sinhviens);
         }
 
+        // Hiển thị dữ liệu sinh viên lên DataGridView
         private void BindGrid(List<Sinhvien> sinhViens)
         {
             dgvDSSV.Rows.Clear();
@@ -32,10 +36,11 @@ namespace GUI
                 dgvDSSV.Rows[index].Cells[0].Value = s.MaSV;
                 dgvDSSV.Rows[index].Cells[1].Value = s.HotenSV;
                 dgvDSSV.Rows[index].Cells[2].Value = s.Ngaysinh;
-                dgvDSSV.Rows[index].Cells[3].Value = s.Lop?.TenLop;
+                dgvDSSV.Rows[index].Cells[3].Value = s.Lop.TenLop; 
             }
         }
 
+        // Điền dữ liệu vào ComboBox các lớp
         private void FillFacultyCombobox(List<Lop> lops)
         {
             cmbLop.DataSource = lops;
@@ -55,10 +60,12 @@ namespace GUI
             FillFacultyCombobox(lops);
         }
 
+        // Thêm sinh viên mới
         private void btnThem_Click(object sender, EventArgs e)
         {
             try
             {
+                
                 if (string.IsNullOrWhiteSpace(txtMSSV.Text) ||
                     string.IsNullOrWhiteSpace(txtHoTen.Text) ||
                     cmbLop.SelectedValue == null)
@@ -67,6 +74,7 @@ namespace GUI
                     return;
                 }
 
+                
                 string studentId = txtMSSV.Text;
                 if (studentService.FindByID(studentId) != null)
                 {
@@ -79,15 +87,13 @@ namespace GUI
                     MaSV = studentId,
                     HotenSV = txtHoTen.Text,
                     Ngaysinh = dtpNgaySinh.Value,
-                    MaLop = cmbLop.SelectedValue.ToString(),
-                    Lop = new Lop { TenLop = cmbLop.Text } // Tạo đối tượng lớp
+                    MaLop = cmbLop.SelectedValue.ToString() 
                 };
-
                 studentService.AddSinhVien(newStudent);
-                studentService.SaveChanges();
+studentService.SaveChanges();
 
-                MessageBox.Show("Thêm sinh viên thành công.");
-                LoadData();
+MessageBox.Show("Thêm sinh viên thành công.");
+LoadData();
             }
             catch (Exception ex)
             {
@@ -95,76 +101,71 @@ namespace GUI
             }
         }
 
+        
         private void btnSua_Click(object sender, EventArgs e)
+{
+    try
+    {
+        
+        if (dgvDSSV.SelectedRows.Count == 0)
         {
-            
-                try
-                {
-                    if (dgvDSSV.SelectedRows.Count == 0)
-                    {
-                        MessageBox.Show("Vui lòng chọn một sinh viên để sửa thông tin.");
-                        return;
-                    }
-
-                    if (string.IsNullOrWhiteSpace(txtHoTen.Text) ||
-                        cmbLop.SelectedValue == null)
-                    {
-                        MessageBox.Show("Vui lòng nhập đủ thông tin: Họ tên và Lớp.");
-                        return;
-                    }
-
-                    var selectedRow = dgvDSSV.SelectedRows[0];
-                    string studentId = selectedRow.Cells[0].Value.ToString();
-
-                    var student = studentService.FindByID(studentId);
-                    if (student != null)
-                    {
-                        student.HotenSV = txtHoTen.Text;
-                        student.Ngaysinh = dtpNgaySinh.Value;
-                        student.MaLop = cmbLop.SelectedValue.ToString(); // Cập nhật mã lớp
-
-                        // Nếu đối tượng Lop là null, hãy khởi tạo lại
-                        if (student.Lop == null)
-                        {
-                            student.Lop = new Lop();
-                        }
-                        student.Lop.TenLop = cmbLop.Text; // Cập nhật tên lớp
-
-                        studentService.SaveChanges();
-                        MessageBox.Show("Sửa thông tin sinh viên thành công.");
-                        LoadData();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Lỗi: {ex.Message}");
-                }
-            
-
+            MessageBox.Show("Vui lòng chọn một sinh viên để sửa thông tin.");
+            return;
         }
 
-        private void btnXoa_Click(object sender, EventArgs e)
+        
+        if (string.IsNullOrWhiteSpace(txtHoTen.Text) ||
+            cmbLop.SelectedValue == null)
         {
-            try
+            MessageBox.Show("Vui lòng nhập đủ thông tin: Họ tên và Lớp.");
+            return;
+        }
+
+        var selectedRow = dgvDSSV.SelectedRows[0];
+        string studentId = selectedRow.Cells[0].Value.ToString();
+
+        var student = studentService.FindByID(studentId);
+        if (student != null)
+        {
+            student.HotenSV = txtHoTen.Text;
+            student.Ngaysinh = dtpNgaySinh.Value;
+            student.MaLop = cmbLop.SelectedValue.ToString(); 
+
+            studentService.SaveChanges();
+            MessageBox.Show("Sửa thông tin sinh viên thành công.");
+            LoadData();
+        }
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"Lỗi: {ex.Message}");
+    }
+}
+
+// Xóa sinh viên
+private void btnXoa_Click(object sender, EventArgs e)
+{
+    try
+    {
+        // Kiểm tra xem người dùng đã chọn hàng nào chưa
+        if (dgvDSSV.SelectedRows.Count == 0)
+        {
+            MessageBox.Show("Vui lòng chọn một sinh viên để xóa.");
+            return;
+        }
+
+        var selectedRow = dgvDSSV.SelectedRows[0];
+        string studentId = selectedRow.Cells[0].Value.ToString();
+
+        var confirmResult = MessageBox.Show("Bạn có chắc chắn muốn xóa sinh viên này không?",
+                                             "Xác nhận xóa",
+                                             MessageBoxButtons.YesNo);
+        if (confirmResult == DialogResult.Yes)
+        {
+            var student = studentService.FindByID(studentId);
+            if (student != null)
             {
-                if (dgvDSSV.SelectedRows.Count == 0)
-                {
-                    MessageBox.Show("Vui lòng chọn một sinh viên để xóa.");
-                    return;
-                }
-
-                var selectedRow = dgvDSSV.SelectedRows[0];
-                string studentId = selectedRow.Cells[0].Value.ToString();
-
-                var confirmResult = MessageBox.Show("Bạn có chắc chắn muốn xóa sinh viên này không?",
-                                                     "Xác nhận xóa",
-                                                     MessageBoxButtons.YesNo);
-                if (confirmResult == DialogResult.Yes)
-                {
-                    var student = studentService.FindByID(studentId);
-                    if (student != null)
-                    {
-                        studentService.DeleteSinhVien(studentId);
+                studentService.DeleteSinhVien(studentId);
                         studentService.SaveChanges();
                         MessageBox.Show("Xóa sinh viên thành công.");
                         LoadData();
@@ -177,6 +178,18 @@ namespace GUI
             }
         }
 
+        private void dgvDSSV_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0) // Kiểm tra nếu nhấp vào hàng hợp lệ
+            {
+                var selectedRow = dgvDSSV.Rows[e.RowIndex];
+                txtMSSV.Text = selectedRow.Cells[0].Value.ToString();
+                txtHoTen.Text = selectedRow.Cells[1].Value.ToString();
+                dtpNgaySinh.Value = Convert.ToDateTime(selectedRow.Cells[2].Value);
+                cmbLop.SelectedValue = selectedRow.Cells[3].Value.ToString();
+            }
+        }
+
         private void btnTim_Click(object sender, EventArgs e)
         {
             string searchText = txtTim.Text.ToLower();
@@ -185,15 +198,14 @@ namespace GUI
             BindGrid(filteredStudents);
         }
 
-        private void dgvDSSV_CellClick(object sender, DataGridViewCellEventArgs e)
+        private void FrmSinhVien_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (e.RowIndex >= 0) 
+            var confirmResult = MessageBox.Show("Bạn có chắc chắn muốn thoát không?",
+                                                 "Xác nhận thoát",
+                                                 MessageBoxButtons.YesNo);
+            if (confirmResult == DialogResult.No)
             {
-                var selectedRow = dgvDSSV.Rows[e.RowIndex];
-                txtMSSV.Text = selectedRow.Cells[0].Value.ToString();
-                txtHoTen.Text = selectedRow.Cells[1].Value.ToString();
-                dtpNgaySinh.Value = Convert.ToDateTime(selectedRow.Cells[2].Value);
-                cmbLop.SelectedValue = selectedRow.Cells[3].Value.ToString();
+                e.Cancel = true;
             }
         }
     }
